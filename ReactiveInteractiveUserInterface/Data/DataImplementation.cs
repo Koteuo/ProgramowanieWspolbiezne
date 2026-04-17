@@ -28,8 +28,7 @@ namespace TP.ConcurrentProgramming.Data
 
     public override void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler)
     {
-      if (Disposed)
-        throw new ObjectDisposedException(nameof(DataImplementation));
+
       if (upperLayerHandler == null)
         throw new ArgumentNullException(nameof(upperLayerHandler));
       Random random = new Random();
@@ -39,7 +38,27 @@ namespace TP.ConcurrentProgramming.Data
         Ball newBall = new(startingPosition, startingPosition);
         upperLayerHandler(startingPosition, newBall);
         BallsList.Add(newBall);
-      }
+
+				//// TYMCZASOWY KOD TESTOWY (ignorujemy numberOfBalls i wstawiamy na sztywno):
+
+				//// Kulka 1: Lewy górny róg stołu (z uwzględnieniem np. 10px promienia)
+				//Vector pos1 = new Vector(0, 0);
+				//Ball ball1 = new Ball(pos1, new Vector(0, 0)); // Prędkość ustawiamy na 0
+				//upperLayerHandler(pos1, ball1);
+				//BallsList.Add(ball1);
+
+				//// Kulka 2: Środek stołu (zakładając stół 400x420)
+				//Vector pos2 = new Vector(200, 210);
+				//Ball ball2 = new Ball(pos2, new Vector(0, 0));
+				//upperLayerHandler(pos2, ball2);
+				//BallsList.Add(ball2);
+
+				//// Kulka 3: Prawy dolny róg (blisko krawędzi)
+				//Vector pos3 = new Vector(392, 372);
+				//Ball ball3 = new Ball(pos3, new Vector(0, 0));
+				//upperLayerHandler(pos3, ball3);
+				//BallsList.Add(ball3);
+			}
     }
 
     #endregion DataAbstractAPI
@@ -57,11 +76,14 @@ namespace TP.ConcurrentProgramming.Data
         }
         Disposed = true;
       }
-      else
-        throw new ObjectDisposedException(nameof(DataImplementation));
     }
 
-    public override void Dispose()
+		public override void Stop()
+		{
+			BallsList.Clear();
+		}
+
+		public override void Dispose()
     {
       // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
       Dispose(disposing: true);
@@ -81,9 +103,16 @@ namespace TP.ConcurrentProgramming.Data
 
     private void Move(object? x)
     {
-      foreach (Ball item in BallsList)
-        item.Move(new Vector((RandomGenerator.NextDouble() - 0.5) * 10, (RandomGenerator.NextDouble() - 0.5) * 10));
-    }
+            foreach (Ball item in BallsList)
+            {
+                double deltaX = (RandomGenerator.NextDouble() - 0.5) * 10;
+                double deltaY = (RandomGenerator.NextDouble() - 0.5) * 10;
+
+
+
+                item.Move(new Vector(deltaX, deltaY));
+            }
+        }
 
     #endregion private
 

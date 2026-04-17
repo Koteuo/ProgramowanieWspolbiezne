@@ -33,13 +33,16 @@ namespace TP.ConcurrentProgramming.Presentation.Model
 
     public override void Dispose()
     {
-      if (Disposed)
-        throw new ObjectDisposedException(nameof(Model));
       layerBellow.Dispose();
       Disposed = true;
     }
 
-    public override IDisposable Subscribe(IObserver<IBall> observer)
+		public override void Stop()
+		{
+			layerBellow.Stop();
+		}
+
+		public override IDisposable Subscribe(IObserver<IBall> observer)
     {
       return eventObservable.Subscribe(x => observer.OnNext(x.EventArgs.Ball), ex => observer.OnError(ex), () => observer.OnCompleted());
     }

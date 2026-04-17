@@ -25,25 +25,26 @@ namespace TP.ConcurrentProgramming.BusinessLogic
       layerBellow = underneathLayer == null ? UnderneathLayerAPI.GetDataLayer() : underneathLayer;
     }
 
-    #endregion ctor
+		#endregion ctor
 
-    #region BusinessLogicAbstractAPI
+		#region BusinessLogicAbstractAPI
 
-    public override void Dispose()
+		public override void Stop()
+		{
+			layerBellow.Stop();
+		}
+
+		public override void Dispose()
     {
-      if (Disposed)
-        throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
       layerBellow.Dispose();
       Disposed = true;
     }
 
     public override void Start(int numberOfBalls, Action<IPosition, IBall> upperLayerHandler)
     {
-      if (Disposed)
-        throw new ObjectDisposedException(nameof(BusinessLogicImplementation));
       if (upperLayerHandler == null)
         throw new ArgumentNullException(nameof(upperLayerHandler));
-      layerBellow.Start(numberOfBalls, (startingPosition, databall) => upperLayerHandler(new Position(startingPosition.x, startingPosition.x), new Ball(databall)));
+      layerBellow.Start(numberOfBalls, (startingPosition, databall) => upperLayerHandler(new Position(startingPosition.x, startingPosition.y), new Ball(databall)));
     }
 
     #endregion BusinessLogicAbstractAPI

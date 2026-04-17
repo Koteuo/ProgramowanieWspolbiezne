@@ -26,10 +26,10 @@ namespace TP.ConcurrentProgramming.BusinessLogic
     public static readonly Dimensions GetDimensions = new(10.0, 10.0, 10.0);
 
     public abstract void Start(int numberOfBalls, Action<IPosition, IBall> upperLayerHandler);
+		public abstract void Stop();
+		#region IDisposable
 
-    #region IDisposable
-
-    public abstract void Dispose();
+		public abstract void Dispose();
 
     #endregion IDisposable
 

@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 using TP.ConcurrentProgramming.Presentation.Model;
 using TP.ConcurrentProgramming.Presentation.ViewModel.MVVMLight;
 using ModelIBall = TP.ConcurrentProgramming.Presentation.Model.IBall;
@@ -17,34 +18,60 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel
 {
   public class MainWindowViewModel : ViewModelBase, IDisposable
   {
-    #region ctor
 
     public MainWindowViewModel() : this(null)
     { }
 
-    internal MainWindowViewModel(ModelAbstractApi modelLayerAPI)
-    {
-      ModelLayer = modelLayerAPI == null ? ModelAbstractApi.CreateModel() : modelLayerAPI;
-      Observer = ModelLayer.Subscribe<ModelIBall>(x => Balls.Add(x));
-    }
+		private int _ballsNumber;
+		public int BallsNumber
+		{
+			get => _ballsNumber;
+			set
+			{
+				_ballsNumber = value;
+				RaisePropertyChanged();
+			}
+		}
 
-    #endregion ctor
+		public ICommand StartCommand { get; }
+		public ICommand StopCommand { get; }
 
-    #region public API
+		public MainWindowViewModel(ModelAbstractApi modelLayerAPI)
+		{
+			ModelLayer = modelLayerAPI == null ? ModelAbstractApi.CreateModel() : modelLayerAPI;
+			// Subskrypcja powinna trwać przez cały czas działania, aby odbierać nowe kulki
+			Observer = ModelLayer.Subscribe<ModelIBall>(x => Balls.Add(x));
 
-    public void Start(int numberOfBalls)
-    {
-      if (Disposed)
-        throw new ObjectDisposedException(nameof(MainWindowViewModel));
-      ModelLayer.Start(numberOfBalls);
-      Observer.Dispose();
-    }
+			StartCommand = new RelayCommand(() => Start(BallsNumber), () => !IsRunning);
+			StopCommand = new RelayCommand(Stop, () => IsRunning);
+		}
 
-    public ObservableCollection<ModelIBall> Balls { get; } = new ObservableCollection<ModelIBall>();
+		private bool _isRunning;
+		public bool IsRunning
+		{
+			get => _isRunning;
+			set { _isRunning = value; RaisePropertyChanged(); ((RelayCommand)StartCommand).RaiseCanExecuteChanged(); ((RelayCommand)StopCommand).RaiseCanExecuteChanged(); }
+		}
 
-    #endregion public API
+		public void Start(int numberOfBalls)
+		{
+			if (numberOfBalls <= 0) return;
+			IsRunning = true;
+			ModelLayer.Start(numberOfBalls);
+		}
 
-    #region IDisposable
+		public void Stop()
+		{
+			IsRunning = false;
+			ModelLayer.Stop();
+			Balls.Clear();
+		}
+
+		public ObservableCollection<ModelIBall> Balls { get; } = new ObservableCollection<ModelIBall>();
+
+
+
+
 
     protected virtual void Dispose(bool disposing)
     {
@@ -71,14 +98,12 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel
       GC.SuppressFinalize(this);
     }
 
-    #endregion IDisposable
 
-    #region private
 
     private IDisposable Observer = null;
     private ModelAbstractApi ModelLayer;
     private bool Disposed = false;
 
-    #endregion private
+
   }
 }
