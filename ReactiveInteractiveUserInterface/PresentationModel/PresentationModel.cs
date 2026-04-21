@@ -39,24 +39,34 @@ namespace TP.ConcurrentProgramming.Presentation.Model
 
 		public override void Stop()
 		{
+			if (Disposed)
+				throw new ObjectDisposedException(nameof(ModelImplementation));
+
 			layerBellow.Stop();
 		}
 
-		public override IDisposable Subscribe(IObserver<IBall> observer)
-    {
-      return eventObservable.Subscribe(x => observer.OnNext(x.EventArgs.Ball), ex => observer.OnError(ex), () => observer.OnCompleted());
-    }
+		
+    public override IDisposable Subscribe(IObserver<IBall> observer)
+		{
+			if (Disposed)
+				throw new ObjectDisposedException(nameof(ModelImplementation));
 
-    public override void Start(int numberOfBalls)
-    {
-      layerBellow.Start(numberOfBalls, StartHandler);
-    }
+			return eventObservable.Subscribe(x => observer.OnNext(x.EventArgs.Ball), ex => observer.OnError(ex), () => observer.OnCompleted());
+		}
 
-    #endregion ModelAbstractApi
+		public override void Start(int numberOfBalls)
+		{
+			if (Disposed)
+				throw new ObjectDisposedException(nameof(ModelImplementation));
 
-    #region API
+			layerBellow.Start(numberOfBalls, StartHandler);
+		}
 
-    public event EventHandler<BallChaneEventArgs> BallChanged;
+		#endregion ModelAbstractApi
+
+		#region API
+
+		public event EventHandler<BallChaneEventArgs> BallChanged;
 
     #endregion API
 

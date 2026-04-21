@@ -26,6 +26,9 @@ namespace TP.ConcurrentProgramming.Presentation.Model
       underneathBall.NewPositionNotification += NewPositionNotification;
     }
 
+
+
+
     #region IBall
 
     public double Top
@@ -67,12 +70,19 @@ namespace TP.ConcurrentProgramming.Presentation.Model
     private double TopBackingField;
     private double LeftBackingField;
 
-    private void NewPositionNotification(object sender, IPosition e)
-    {
-      Top = e.y; Left = e.x;
-    }
+		private void NewPositionNotification(object sender, IPosition e)
+		{
+			double actualCanvasWidth = 392;
+			double actualCanvasHeight = 412;
 
-    private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
+			double logicalBoardWidth = 100;
+			double logicalBoardHeight = 100;
+
+			Left = e.x * (actualCanvasWidth / logicalBoardWidth);
+			Top = e.y * (actualCanvasHeight / logicalBoardHeight);
+		}
+
+		private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
     {
       PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }

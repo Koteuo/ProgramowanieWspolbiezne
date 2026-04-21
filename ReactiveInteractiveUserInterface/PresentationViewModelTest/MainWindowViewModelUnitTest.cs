@@ -80,7 +80,9 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel.Test
         Started = numberOfBalls;
       }
 
-      public override IDisposable Subscribe(IObserver<ModelIBall> observer)
+			public override void Stop() { }
+
+			public override IDisposable Subscribe(IObserver<ModelIBall> observer)
       {
         Subscribed++;
         return new NullDisposable();
@@ -95,6 +97,7 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel.Test
         public void Dispose()
         { }
       }
+
 
       #endregion private
     }
@@ -137,11 +140,13 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel.Test
         Disposed = true;
       }
 
-      #endregion ModelAbstractApi
+			public override void Stop() { }
 
-      #region API
+			#endregion ModelAbstractApi
 
-      public event EventHandler<BallChaneEventArgs> BallChanged;
+			#region API
+
+			public event EventHandler<BallChaneEventArgs> BallChanged;
 
       #endregion API
 

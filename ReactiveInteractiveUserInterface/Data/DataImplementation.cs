@@ -38,26 +38,6 @@ namespace TP.ConcurrentProgramming.Data
         Ball newBall = new(startingPosition, startingPosition);
         upperLayerHandler(startingPosition, newBall);
         BallsList.Add(newBall);
-
-				//// TYMCZASOWY KOD TESTOWY (ignorujemy numberOfBalls i wstawiamy na sztywno):
-
-				//// Kulka 1: Lewy górny róg stołu (z uwzględnieniem np. 10px promienia)
-				//Vector pos1 = new Vector(0, 0);
-				//Ball ball1 = new Ball(pos1, new Vector(0, 0)); // Prędkość ustawiamy na 0
-				//upperLayerHandler(pos1, ball1);
-				//BallsList.Add(ball1);
-
-				//// Kulka 2: Środek stołu (zakładając stół 400x420)
-				//Vector pos2 = new Vector(200, 210);
-				//Ball ball2 = new Ball(pos2, new Vector(0, 0));
-				//upperLayerHandler(pos2, ball2);
-				//BallsList.Add(ball2);
-
-				//// Kulka 3: Prawy dolny róg (blisko krawędzi)
-				//Vector pos3 = new Vector(392, 372);
-				//Ball ball3 = new Ball(pos3, new Vector(0, 0));
-				//upperLayerHandler(pos3, ball3);
-				//BallsList.Add(ball3);
 			}
     }
 

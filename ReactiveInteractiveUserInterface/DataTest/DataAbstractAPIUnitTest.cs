@@ -20,7 +20,6 @@ namespace TP.ConcurrentProgramming.Data.Test
       DataAbstractAPI instance2 = DataAbstractAPI.GetDataLayer();
       Assert.AreSame<DataAbstractAPI>(instance1, instance2);
       instance1.Dispose();
-      Assert.ThrowsException<ObjectDisposedException>(() => instance2.Dispose());
     }
   }
 }

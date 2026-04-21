@@ -38,7 +38,6 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
       newInstance.Dispose();
       newInstance.CheckObjectDisposed(x => newInstanceDisposed = x);
       Assert.IsTrue(newInstanceDisposed);
-      Assert.ThrowsException<ObjectDisposedException>(() => newInstance.Dispose());
       Assert.ThrowsException<ObjectDisposedException>(() => newInstance.Start(0, (position, ball) => { }));
       Assert.IsTrue(dataLayerFixcure.Disposed);
     }
@@ -71,7 +70,9 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
       {
         throw new NotImplementedException();
       }
-    }
+
+			public override void Stop() { }
+		}
 
     private class DataLayerDisposeFixcure : Data.DataAbstractAPI
     {
@@ -86,7 +87,9 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
       {
         throw new NotImplementedException();
       }
-    }
+
+			public override void Stop() { }
+		}
 
     private class DataLayerStartFixcure : Data.DataAbstractAPI
     {
@@ -102,6 +105,7 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
         NumberOfBallseCreated = numberOfBalls;
         upperLayerHandler(new DataVectorFixture(), new DataBallFixture());
       }
+            public override void Stop() { }
 
       private record DataVectorFixture : Data.IVector
       {

@@ -39,25 +39,29 @@ namespace TP.ConcurrentProgramming.Data
             NewPositionNotification?.Invoke(this, Position);
         }
 
-        internal void Move(Vector delta)
-        {
-            double nextX = Position.x + delta.x;
-            double nextY = Position.y + delta.y;
+		internal void Move(Vector delta)
+		{
+			double nextX = Position.x + delta.x;
+			double nextY = Position.y + delta.y;
 
-            if (nextX <= 0 || nextX >= (372))
-            {
-                nextX = Position.x;
-            }
+			double logicalBoardWidth = 100;
+			double logicalBoardHeight = 100;
+			double logicalBallSize = 2;
 
-			if (nextY <= 0 || nextY >= (392))
+			if (nextX <= 0 || nextX >= (logicalBoardWidth - logicalBallSize))
 			{
-				nextY = Position.y; 
+				nextX = Position.x;
+			}
+
+			if (nextY <= 0 || nextY >= (logicalBoardHeight - logicalBallSize))
+			{
+				nextY = Position.y;
 			}
 
 			Position = new Vector(nextX, nextY);
-      RaiseNewPositionChangeNotification();
-    }
+			RaiseNewPositionChangeNotification();
+		}
 
-    #endregion private
-  }
+		#endregion private
+	}
 }
