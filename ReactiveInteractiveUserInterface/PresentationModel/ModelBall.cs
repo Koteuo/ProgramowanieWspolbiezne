@@ -72,14 +72,14 @@ namespace TP.ConcurrentProgramming.Presentation.Model
 
 		private void NewPositionNotification(object sender, IPosition e)
 		{
-			double actualCanvasWidth = 392;
-			double actualCanvasHeight = 412;
+			double actualCanvasWidth = 382.0;
+			double actualCanvasHeight = 402.0;
 
-			double logicalBoardWidth = 100;
-			double logicalBoardHeight = 100;
+			double logicalBoardWidth = 100.0;
+			double logicalBoardHeight = 100.0;
 
-			Left = e.x * (actualCanvasWidth / logicalBoardWidth);
-			Top = e.y * (actualCanvasHeight / logicalBoardHeight);
+			Left = (e.x * (actualCanvasWidth / logicalBoardWidth));
+			Top = (e.y * (actualCanvasHeight / logicalBoardHeight));
 		}
 
 		private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
