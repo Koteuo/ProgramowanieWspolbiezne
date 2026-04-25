@@ -10,44 +10,57 @@
 
 using System.Diagnostics;
 using UnderneathLayerAPI = TP.ConcurrentProgramming.Data.DataAbstractAPI;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace TP.ConcurrentProgramming.BusinessLogic
 {
     internal class BusinessLogicImplementation : BusinessLogicAbstractAPI
     {
-        public BusinessLogicImplementation() : this(null)
-        { }
+        private CancellationTokenSource? _cancelTokenSource;
+        private readonly UnderneathLayerAPI layerBellow;
+
+        public BusinessLogicImplementation() : this(null) { }
 
         internal BusinessLogicImplementation(UnderneathLayerAPI? underneathLayer)
         {
-            layerBellow = underneathLayer == null ? UnderneathLayerAPI.GetDataLayer() : underneathLayer;
+            layerBellow = underneathLayer ?? UnderneathLayerAPI.GetDataLayer();
         }
+
+        public override void Start(int numberOfBalls, Action<IPosition, IBall> upperLayerHandler)
+        {
+            _cancelTokenSource = new CancellationTokenSource();
+
+            layerBellow.Start(numberOfBalls, (startingPosition, databall) =>
+            {
+                Ball logicBall = new Ball(databall);
+                upperLayerHandler(new Position(startingPosition.x, startingPosition.y), logicBall);
+
+                // Uruchamiamy niezależne zadanie (wątek) dla każdej kulki
+                Task.Run(() => MoveLoop(logicBall, _cancelTokenSource.Token));
+            });
+        }
+
+        private async Task MoveLoop(Ball ball, CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                ball.Move();
+                // Częstotliwość odświeżania (ok. 50 FPS)
+                await Task.Delay(20);
+            }
+        }
+
         public override void Stop()
         {
+            _cancelTokenSource?.Cancel();
             layerBellow.Stop();
         }
 
         public override void Dispose()
         {
+            Stop();
             layerBellow.Dispose();
-            Disposed = true;
-        }
-
-        public override void Start(int numberOfBalls, Action<IPosition, IBall> upperLayerHandler)
-        {
-            if (upperLayerHandler == null)
-                throw new ArgumentNullException(nameof(upperLayerHandler));
-            layerBellow.Start(numberOfBalls, (startingPosition, databall) => upperLayerHandler(new Position(startingPosition.x, startingPosition.y), new Ball(databall)));
-        }
-
-        private bool Disposed = false;
-
-        private readonly UnderneathLayerAPI layerBellow;
-
-        [Conditional("DEBUG")]
-        internal void CheckObjectDisposed(Action<bool> returnInstanceDisposed)
-        {
-            returnInstanceDisposed(Disposed);
         }
     }
 }

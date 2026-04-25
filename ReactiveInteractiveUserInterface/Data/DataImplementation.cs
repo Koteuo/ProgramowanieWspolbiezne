@@ -9,6 +9,7 @@
 //_____________________________________________________________________________________________________________________________________
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace TP.ConcurrentProgramming.Data
@@ -17,12 +18,7 @@ namespace TP.ConcurrentProgramming.Data
     {
         public DataImplementation()
         {
-            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
         }
-
-        #endregion ctor
-
-        #region DataAbstractAPI
 
         public override void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler)
         {
@@ -32,12 +28,13 @@ namespace TP.ConcurrentProgramming.Data
             Random random = new Random();
             for (int i = 0; i < numberOfBalls; i++)
             {
-                Vector startingPosition = new(random.Next(5, 95), random.Next(5, 95));
+                // Inicjalizacja stanu początkowego - tylko wygenerowanie danych
+                Vector startingPosition = new Vector(random.Next(5, 95), random.Next(5, 95));
                 double velocityX = (random.NextDouble() * 5) - 2.5;
                 double velocityY = (random.NextDouble() * 5) - 2.5;
                 Vector initialVelocity = new Vector(velocityX, velocityY);
 
-                Ball newBall = new(startingPosition, initialVelocity);
+                Ball newBall = new Ball(startingPosition, initialVelocity);
                 upperLayerHandler(startingPosition, newBall);
 
                 // ZABEZPIECZENIE DODAWANIA
@@ -63,7 +60,6 @@ namespace TP.ConcurrentProgramming.Data
             {
                 if (disposing)
                 {
-                    MoveTimer.Dispose();
                     // ZABEZPIECZENIE CZYSZCZENIA
                     lock (_ballsLock)
                     {
@@ -74,12 +70,6 @@ namespace TP.ConcurrentProgramming.Data
             }
         }
 
-        #endregion DataAbstractAPI
-
-        #region IDisposable
-
-
-
         public override void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
@@ -88,34 +78,18 @@ namespace TP.ConcurrentProgramming.Data
         }
 
         private bool Disposed = false;
-
-        private readonly Timer MoveTimer;
-        private Random RandomGenerator = new();
-        private List<Ball> BallsList = [];
-
+        private List<Ball> BallsList = new List<Ball>();
         private readonly object _ballsLock = new object();
 
-        private void Move(object? x)
-        {
-            // ZABEZPIECZENIE ITERACJI
-            lock (_ballsLock)
-            {
-                foreach (Ball item in BallsList)
-                {
-                    item.Move();
-                }
-            }
-        }
-
-        #endregion private
-
-        #region TestingInfrastructure
+        // -------------------------------------------------------------
+        // Metody testowe z atrybutem Conditional
+        // -------------------------------------------------------------
 
         [Conditional("DEBUG")]
-    internal void CheckBallsList(Action<IEnumerable<IBall>> returnBallsList)
-    {
-      returnBallsList(BallsList);
-    }
+        internal void CheckBallsList(Action<IEnumerable<IBall>> returnBallsList)
+        {
+            returnBallsList(BallsList);
+        }
 
         [Conditional("DEBUG")]
         internal void CheckNumberOfBalls(Action<int> returnNumberOfBalls)

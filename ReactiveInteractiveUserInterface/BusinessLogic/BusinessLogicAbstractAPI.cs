@@ -17,7 +17,7 @@ namespace TP.ConcurrentProgramming.BusinessLogic
             return modelInstance.Value;
         }
 
-        public static readonly Dimensions GetDimensions = new(10.0, 10.0, 10.0);
+        public static readonly Dimensions GetDimensions = new Dimensions(10.0, 100.0, 100.0);
 
         public abstract void Start(int numberOfBalls, Action<IPosition, IBall> upperLayerHandler);
         public abstract void Stop();
