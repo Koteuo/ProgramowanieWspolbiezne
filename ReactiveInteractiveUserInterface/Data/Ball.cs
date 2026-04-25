@@ -12,25 +12,15 @@ namespace TP.ConcurrentProgramming.Data
 {
     internal class Ball : IBall
     {
-        #region ctor
-
         internal Ball(Vector initialPosition, Vector initialVelocity)
         {
             Position = initialPosition;
             Velocity = initialVelocity;
         }
 
-        #endregion ctor
-
-        #region IBall
-
         public event EventHandler<IVector>? NewPositionNotification;
 
         public IVector Velocity { get; set; }
-
-        #endregion IBall
-
-        #region private
 
         private Vector Position;
 
@@ -39,29 +29,27 @@ namespace TP.ConcurrentProgramming.Data
             NewPositionNotification?.Invoke(this, Position);
         }
 
-		internal void Move(Vector delta)
-		{
-			double nextX = Position.x + delta.x;
-			double nextY = Position.y + delta.y;
+        internal void Move(Vector delta)
+        {
+            double nextX = Position.x + delta.x;
+            double nextY = Position.y + delta.y;
 
-			double logicalBoardWidth = 100;
-			double logicalBoardHeight = 100;
-			double logicalBallSize = 2;
+            double logicalBoardWidth = 100;
+            double logicalBoardHeight = 100;
+            double logicalBallSize = 2;
 
-			if (nextX <= 0 || nextX >= (logicalBoardWidth - logicalBallSize))
-			{
-				nextX = Position.x;
-			}
+            if (nextX <= 0 || nextX >= (logicalBoardWidth - logicalBallSize))
+            {
+                nextX = Position.x;
+            }
 
-			if (nextY <= 0 || nextY >= (logicalBoardHeight - logicalBallSize))
-			{
-				nextY = Position.y;
-			}
+            if (nextY <= 0 || nextY >= (logicalBoardHeight - logicalBallSize))
+            {
+                nextY = Position.y;
+            }
 
-			Position = new Vector(nextX, nextY);
-			RaiseNewPositionChangeNotification();
-		}
-
-		#endregion private
-	}
+            Position = new Vector(nextX, nextY);
+            RaiseNewPositionChangeNotification();
+        }
+    }
 }
