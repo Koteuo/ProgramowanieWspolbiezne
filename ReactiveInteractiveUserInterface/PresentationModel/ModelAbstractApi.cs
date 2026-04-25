@@ -27,23 +27,10 @@ namespace TP.ConcurrentProgramming.Presentation.Model
     }
 
     public abstract void Start(int numberOfBalls);
-		public abstract void Stop();
-		#region IObservable
-
-		public abstract IDisposable Subscribe(IObserver<IBall> observer);
-
-    #endregion IObservable
-
-    #region IDisposable
-
+    public abstract void Stop();
+	public abstract IDisposable Subscribe(IObserver<IBall> observer);
     public abstract void Dispose();
 
-    #endregion IDisposable
-
-    #region private
-
     private static Lazy<ModelAbstractApi> modelInstance = new Lazy<ModelAbstractApi>(() => new ModelImplementation());
-
-    #endregion private
   }
 }

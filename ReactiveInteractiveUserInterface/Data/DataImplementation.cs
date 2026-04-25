@@ -13,14 +13,12 @@ using System.Diagnostics;
 
 namespace TP.ConcurrentProgramming.Data
 {
-  internal class DataImplementation : DataAbstractAPI
-  {
-    #region ctor
-
-    public DataImplementation()
+    internal class DataImplementation : DataAbstractAPI
     {
-      MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
-    }
+        public DataImplementation()
+        {
+            MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
+        }
 
         #endregion ctor
 
@@ -82,23 +80,18 @@ namespace TP.ConcurrentProgramming.Data
 
 
 
-		public override void Dispose()
-    {
-      // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-      Dispose(disposing: true);
-      GC.SuppressFinalize(this);
-    }
+        public override void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
 
-    #endregion IDisposable
+        private bool Disposed = false;
 
-    #region private
-
-    //private bool disposedValue;
-    private bool Disposed = false;
-
-    private readonly Timer MoveTimer;
-    private Random RandomGenerator = new();
-    private List<Ball> BallsList = [];
+        private readonly Timer MoveTimer;
+        private Random RandomGenerator = new();
+        private List<Ball> BallsList = [];
 
         private readonly object _ballsLock = new object();
 
@@ -124,18 +117,16 @@ namespace TP.ConcurrentProgramming.Data
       returnBallsList(BallsList);
     }
 
-    [Conditional("DEBUG")]
-    internal void CheckNumberOfBalls(Action<int> returnNumberOfBalls)
-    {
-      returnNumberOfBalls(BallsList.Count);
-    }
+        [Conditional("DEBUG")]
+        internal void CheckNumberOfBalls(Action<int> returnNumberOfBalls)
+        {
+            returnNumberOfBalls(BallsList.Count);
+        }
 
-    [Conditional("DEBUG")]
-    internal void CheckObjectDisposed(Action<bool> returnInstanceDisposed)
-    {
-      returnInstanceDisposed(Disposed);
+        [Conditional("DEBUG")]
+        internal void CheckObjectDisposed(Action<bool> returnInstanceDisposed)
+        {
+            returnInstanceDisposed(Disposed);
+        }
     }
-
-    #endregion TestingInfrastructure
-  }
 }
