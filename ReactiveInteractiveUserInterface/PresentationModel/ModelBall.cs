@@ -65,7 +65,7 @@ namespace TP.ConcurrentProgramming.Presentation.Model
 
             double logicalBoardWidth = 100.0;
             double logicalBoardHeight = 100.0;
-            double logicalBallSize = 10.0;
+            double logicalBallSize = 5.0;
 
             double progressX = e.x / (logicalBoardWidth - logicalBallSize);
             double progressY = e.y / (logicalBoardHeight - logicalBallSize);

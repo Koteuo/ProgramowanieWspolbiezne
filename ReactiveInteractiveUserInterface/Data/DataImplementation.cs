@@ -34,7 +34,7 @@ namespace TP.ConcurrentProgramming.Data
                 double velocityY = (random.NextDouble() * 5) - 2.5;
                 Vector initialVelocity = new Vector(velocityX, velocityY);
 
-                Ball newBall = new Ball(startingPosition, initialVelocity);
+                Ball newBall = new Ball(startingPosition, initialVelocity, 1.0, 10.0);
                 upperLayerHandler(startingPosition, newBall);
 
                 // ZABEZPIECZENIE DODAWANIA
@@ -47,9 +47,15 @@ namespace TP.ConcurrentProgramming.Data
 
         public override void Stop()
         {
-            // ZABEZPIECZENIE CZYSZCZENIA
             lock (_ballsLock)
             {
+                foreach (var ball in BallsList)
+                {
+                    if (ball is Ball b)
+                    {
+                        b.Dispose();
+                    }
+                }
                 BallsList.Clear();
             }
         }

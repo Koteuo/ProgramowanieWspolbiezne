@@ -66,7 +66,4 @@ namespace TP.ConcurrentProgramming.BusinessLogic
             _dataBall.Position = new LogicVector(nextX, nextY);
         }
     }
-
-    // Rekord pomocniczy do omijania błędu widoczności Vector z warstwy Data
-    internal record LogicVector(double x, double y) : Data.IVector;
 }
