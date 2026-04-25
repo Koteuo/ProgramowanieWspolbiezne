@@ -39,29 +39,46 @@ namespace TP.ConcurrentProgramming.Data
             NewPositionNotification?.Invoke(this, Position);
         }
 
-		internal void Move(Vector delta)
-		{
-			double nextX = Position.x + delta.x;
-			double nextY = Position.y + delta.y;
+        internal void Move()
+        {
+            // 1. Wyliczenie nowej pozycji poprzez dodanie wektora prędkości
+            // Zakładamy, że Velocity.x to "siła i zwrot" w osi X, a Velocity.y w osi Y
+            double nextX = Position.x + Velocity.x;
+            double nextY = Position.y + Velocity.y;
 
-			double logicalBoardWidth = 100;
-			double logicalBoardHeight = 100;
-			double logicalBallSize = 2;
+            double logicalBoardWidth = 100;
+            double logicalBoardHeight = 100;
+            double logicalBallSize = 2;
 
-			if (nextX <= 0 || nextX >= (logicalBoardWidth - logicalBallSize))
-			{
-				nextX = Position.x;
-			}
+            // 2. Obsługa odbicia od lewej lub prawej ściany (oś X)
+            if (nextX <= 0)
+            {
+                nextX = 0; // Wyrównanie do krawędzi
+                Velocity = new Vector(-Velocity.x, Velocity.y); // Odwrócenie zwrotu X
+            }
+            else if (nextX >= (logicalBoardWidth - logicalBallSize))
+            {
+                nextX = logicalBoardWidth - logicalBallSize;
+                Velocity = new Vector(-Velocity.x, Velocity.y);
+            }
 
-			if (nextY <= 0 || nextY >= (logicalBoardHeight - logicalBallSize))
-			{
-				nextY = Position.y;
-			}
+            // 3. Obsługa odbicia od górnej lub dolnej ściany (oś Y)
+            if (nextY <= 0)
+            {
+                nextY = 0;
+                Velocity = new Vector(Velocity.x, -Velocity.y); // Odwrócenie zwrotu Y
+            }
+            else if (nextY >= (logicalBoardHeight - logicalBallSize))
+            {
+                nextY = logicalBoardHeight - logicalBallSize;
+                Velocity = new Vector(Velocity.x, -Velocity.y);
+            }
 
-			Position = new Vector(nextX, nextY);
-			RaiseNewPositionChangeNotification();
-		}
+            // 4. Aktualizacja pozycji i powiadomienie subskrybentów
+            Position = new Vector(nextX, nextY);
+            RaiseNewPositionChangeNotification();
+        }
 
-		#endregion private
-	}
+        #endregion private
+    }
 }

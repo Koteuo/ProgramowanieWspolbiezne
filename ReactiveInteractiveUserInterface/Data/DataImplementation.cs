@@ -22,48 +22,65 @@ namespace TP.ConcurrentProgramming.Data
       MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
     }
 
-    #endregion ctor
+        #endregion ctor
 
-    #region DataAbstractAPI
+        #region DataAbstractAPI
 
-    public override void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler)
-    {
-
-      if (upperLayerHandler == null)
-        throw new ArgumentNullException(nameof(upperLayerHandler));
-      Random random = new Random();
-      for (int i = 0; i < numberOfBalls; i++)
-      {
-        Vector startingPosition = new(random.Next(5, 95), random.Next(5, 95));
-        Ball newBall = new(startingPosition, startingPosition);
-        upperLayerHandler(startingPosition, newBall);
-        BallsList.Add(newBall);
-			}
-
-
-    }
-
-    #endregion DataAbstractAPI
-
-    #region IDisposable
-
-    protected virtual void Dispose(bool disposing)
-    {
-      if (!Disposed)
-      {
-        if (disposing)
+        public override void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler)
         {
-          MoveTimer.Dispose();
-          BallsList.Clear();
-        }
-        Disposed = true;
-      }
-    }
+            if (upperLayerHandler == null)
+                throw new ArgumentNullException(nameof(upperLayerHandler));
 
-		public override void Stop()
-		{
-			BallsList.Clear();
-		}
+            Random random = new Random();
+            for (int i = 0; i < numberOfBalls; i++)
+            {
+                Vector startingPosition = new(random.Next(5, 95), random.Next(5, 95));
+                double velocityX = (random.NextDouble() * 5) - 2.5;
+                double velocityY = (random.NextDouble() * 5) - 2.5;
+                Vector initialVelocity = new Vector(velocityX, velocityY);
+
+                Ball newBall = new(startingPosition, initialVelocity);
+                upperLayerHandler(startingPosition, newBall);
+
+                // ZABEZPIECZENIE DODAWANIA
+                lock (_ballsLock)
+                {
+                    BallsList.Add(newBall);
+                }
+            }
+        }
+
+        public override void Stop()
+        {
+            // ZABEZPIECZENIE CZYSZCZENIA
+            lock (_ballsLock)
+            {
+                BallsList.Clear();
+            }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!Disposed)
+            {
+                if (disposing)
+                {
+                    MoveTimer.Dispose();
+                    // ZABEZPIECZENIE CZYSZCZENIA
+                    lock (_ballsLock)
+                    {
+                        BallsList.Clear();
+                    }
+                }
+                Disposed = true;
+            }
+        }
+
+        #endregion DataAbstractAPI
+
+        #region IDisposable
+
+
 
 		public override void Dispose()
     {
@@ -83,24 +100,25 @@ namespace TP.ConcurrentProgramming.Data
     private Random RandomGenerator = new();
     private List<Ball> BallsList = [];
 
-    private void Move(object? x)
-    {
-            foreach (Ball item in BallsList)
+        private readonly object _ballsLock = new object();
+
+        private void Move(object? x)
+        {
+            // ZABEZPIECZENIE ITERACJI
+            lock (_ballsLock)
             {
-                double deltaX = (RandomGenerator.NextDouble() - 0.5) * 10;
-                double deltaY = (RandomGenerator.NextDouble() - 0.5) * 10;
-
-
-
-                item.Move(new Vector(deltaX, deltaY));
+                foreach (Ball item in BallsList)
+                {
+                    item.Move();
+                }
             }
         }
 
-    #endregion private
+        #endregion private
 
-    #region TestingInfrastructure
+        #region TestingInfrastructure
 
-    [Conditional("DEBUG")]
+        [Conditional("DEBUG")]
     internal void CheckBallsList(Action<IEnumerable<IBall>> returnBallsList)
     {
       returnBallsList(BallsList);
