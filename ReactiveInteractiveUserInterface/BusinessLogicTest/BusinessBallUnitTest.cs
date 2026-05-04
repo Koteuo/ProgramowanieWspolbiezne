@@ -13,6 +13,7 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
     [TestClass]
     public class BallUnitTest
     {
+
         [TestMethod]
         public void MoveTestMethod()
         {
@@ -24,19 +25,23 @@ namespace TP.ConcurrentProgramming.BusinessLogic.Test
             Assert.AreEqual<int>(1, numberOfCallBackCalled);
         }
 
-        private class DataBallFixture : Data.IBall
-        {
-            public Data.IVector Velocity { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		private class DataBallFixture : Data.IBall
+		{
+			public Data.IVector Velocity { get; set; }
 
-            public event EventHandler<Data.IVector>? NewPositionNotification;
+			public Data.IVector Position { get; set; } = new VectorFixture(0.0, 0.0);
+			public double Mass { get; } = 1.0;
+			public double Radius { get; } = 5.0;
 
-            internal void Move()
-            {
-                NewPositionNotification?.Invoke(this, new VectorFixture(0.0, 0.0));
-            }
-        }
+			public event EventHandler<Data.IVector>? NewPositionNotification;
 
-        private class VectorFixture : Data.IVector
+			internal void Move()
+			{
+				NewPositionNotification?.Invoke(this, new VectorFixture(0.0, 0.0));
+			}
+		}
+
+		private class VectorFixture : Data.IVector
         {
             internal VectorFixture(double X, double Y)
             {

@@ -24,7 +24,6 @@ namespace TP.ConcurrentProgramming.Data
 
         public Ball(Vector initialPosition, Vector initialVelocity, double mass, double radius)
         {
-            // PRZYPISANIE DO POLA: Zapobiega wywoływaniu eventu przed podpięciem subskrybentów
             _position = initialPosition;
             Velocity = initialVelocity;
             Mass = mass;
@@ -40,22 +39,18 @@ namespace TP.ConcurrentProgramming.Data
             {
                 while (!_cancelTokenSource.Token.IsCancellationRequested)
                 {
-                    // Przesunięcie kuli (Ruch kuli bazuje wyłącznie na jej aktualnej prędkości)
                     Position = new Vector(Position.x + Velocity.x, Position.y + Velocity.y);
 
-                    // Czekamy określoną liczbę milisekund (asynchronicznie)
                     await Task.Delay(_updateInterval, _cancelTokenSource.Token);
                 }
             }
             catch (TaskCanceledException)
             {
-                // Zignoruj wyjątek. Jest to naturalne zachowanie przy zamykaniu programu (Stop).
             }
         }
 
         public void Dispose()
         {
-            // Bezpieczne zatrzymanie wątku
             if (!_cancelTokenSource.IsCancellationRequested)
             {
                 _cancelTokenSource.Cancel();
@@ -72,7 +67,7 @@ namespace TP.ConcurrentProgramming.Data
             get => _position;
             set
             {
-                if (_position != value) // Drobna optymalizacja: wywołaj event tylko jeśli faktycznie coś się zmieniło
+                if (_position != value)
                 {
                     _position = value;
                     NewPositionNotification?.Invoke(this, _position);

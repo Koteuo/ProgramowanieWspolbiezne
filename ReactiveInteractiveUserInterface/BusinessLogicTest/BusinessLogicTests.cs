@@ -30,14 +30,18 @@ namespace TP.ConcurrentProgramming.BusinessLogicTest
         public double y { get; init; } = 50;
     }
 
-    internal class FakeBall : Data.IBall
-    {
-        public double Radius => 10;
-        public IVector Velocity { get; set; }
-        public event EventHandler<IVector> NewPositionNotification;
-    }
+	internal class FakeBall : Data.IBall
+	{
+		public double Radius { get; } = 10;
 
-    [TestClass]
+		public double Mass { get; } = 1.0;
+		public IVector Position { get; set; } = new FakeVector();
+
+		public IVector Velocity { get; set; }
+		public event EventHandler<IVector>? NewPositionNotification = delegate { };
+	}
+
+	[TestClass]
     public class BusinessLogicTests
     {
         [TestMethod]

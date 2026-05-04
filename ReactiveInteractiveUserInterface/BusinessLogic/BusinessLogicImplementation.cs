@@ -19,13 +19,13 @@ namespace TP.ConcurrentProgramming.BusinessLogic
     {
         private readonly UnderneathLayerAPI layerBellow;
 
-        // Lista wszystkich kul potrzebna do sprawdzania zderzeń między nimi
         private readonly List<Data.IBall> _allDataBalls = new List<Data.IBall>();
 
-        // Obiekt synchronizacji - sekcja krytyczna (zapobiega wyścigom)
         private readonly object _collisionLock = new object();
 
-        public BusinessLogicImplementation() : this(null) { }
+		private bool Disposed = false;
+
+		public BusinessLogicImplementation() : this(null) { }
 
         internal BusinessLogicImplementation(UnderneathLayerAPI? underneathLayer)
         {
@@ -40,7 +40,6 @@ namespace TP.ConcurrentProgramming.BusinessLogic
 
                 layerBellow.Start(numberOfBalls, (startingPosition, databall) =>
                 {
-                    // Główny wątek dodaje kule...
                     _allDataBalls.Add(databall);
 
                     Ball logicBall = new Ball(databall);
@@ -52,20 +51,15 @@ namespace TP.ConcurrentProgramming.BusinessLogic
             }
         }
 
-        // --- OBSŁUGA ZDERZEŃ ---
-
         private void CheckCollisions(Data.IBall movingBall)
         {
-            // Zabezpieczenie przed modyfikacją tej samej kuli przez dwa różne wątki naraz
             lock (_collisionLock)
             {
-                // 1. Najpierw sprawdzamy odbicia od ścian
                 CheckWallCollisions(movingBall);
 
-                // 2. Następnie zderzenia z innymi kulami
                 foreach (var otherBall in _allDataBalls)
                 {
-                    if (movingBall == otherBall) continue; // Pomijamy sprawdzanie kuli samej ze sobą
+                    if (movingBall == otherBall) continue;
 
                     if (AreBallsColliding(movingBall, otherBall))
                     {
@@ -85,7 +79,6 @@ namespace TP.ConcurrentProgramming.BusinessLogic
 
             bool bounced = false;
 
-            // Ściany X - ZABEZPIECZENIE: Odbijamy tylko, jeśli kulka leci w stronę ściany (velX < 0 lub velX > 0)
             if (nextX <= 0 && velX < 0)
             {
                 nextX = 0;
@@ -99,7 +92,6 @@ namespace TP.ConcurrentProgramming.BusinessLogic
                 bounced = true;
             }
 
-            // Ściany Y - ZABEZPIECZENIE: analogicznie dla osi Y
             if (nextY <= 0 && velY < 0)
             {
                 nextY = 0;
@@ -124,19 +116,15 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         {
             double radius = GetDimensions.BallDimension / 2;
 
-            // Środki kul
             double centerX1 = b1.Position.x + radius;
             double centerY1 = b1.Position.y + radius;
             double centerX2 = b2.Position.x + radius;
             double centerY2 = b2.Position.y + radius;
 
-            // Odległość euklidesowa między środkami
             double distance = Math.Sqrt(Math.Pow(centerX1 - centerX2, 2) + Math.Pow(centerY1 - centerY2, 2));
 
-            // Jeśli odległość jest mniejsza lub równa sumie promieni, kule się stykają
             if (distance <= (radius * 2))
             {
-                // Zabezpieczenie przed sklejaniem: upewniamy się, że kule lecą ku sobie (iloczyn skalarny < 0)
                 double dotProduct = (centerX2 - centerX1) * (b2.Velocity.x - b1.Velocity.x) +
                                     (centerY2 - centerY1) * (b2.Velocity.y - b1.Velocity.y);
                 return dotProduct < 0;
@@ -146,31 +134,26 @@ namespace TP.ConcurrentProgramming.BusinessLogic
 
         private void ResolveCollision(Data.IBall b1, Data.IBall b2)
         {
-            // Przyjmujemy równe masy dla uproszczenia pierwszego etapu symulacji zderzeń
             double m1 = 1.0;
             double m2 = 1.0;
 
-            // Wymiana pędu (zderzenie idealnie sprężyste 2D dla równych mas sprowadza się do uśrednienia i zamiany)
             double newVelX1 = (b1.Velocity.x * (m1 - m2) + (2 * m2 * b2.Velocity.x)) / (m1 + m2);
             double newVelY1 = (b1.Velocity.y * (m1 - m2) + (2 * m2 * b2.Velocity.y)) / (m1 + m2);
 
             double newVelX2 = (b2.Velocity.x * (m2 - m1) + (2 * m1 * b1.Velocity.x)) / (m1 + m2);
             double newVelY2 = (b2.Velocity.y * (m2 - m1) + (2 * m1 * b1.Velocity.y)) / (m1 + m2);
 
-            // Aplikacja nowych wektorów prędkości
             b1.Velocity = new LogicVector(newVelX1, newVelY1);
             b2.Velocity = new LogicVector(newVelX2, newVelY2);
         }
 
         public override void Stop()
         {
-            // Najpierw bezpiecznie czyścimy listę referencji w logice
             lock (_collisionLock)
             {
                 _allDataBalls.Clear();
             }
 
-            // Potem przekazujemy komendę do warstwy niżej, by ubiła Taski
             layerBellow.Stop();
         }
 
@@ -178,9 +161,16 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         {
             Stop();
             layerBellow.Dispose();
-        }
-    }
+			Disposed = true;
+		}
+		[Conditional("DEBUG")]
+		internal void CheckObjectDisposed(Action<bool> returnInstanceDisposed)
+		{
+			returnInstanceDisposed(Disposed);
+		}
 
-    // Pomocniczy rekord do tworzenia wektorów w warstwie logiki
+
+	}
+
     internal record LogicVector(double x, double y) : Data.IVector;
 }
