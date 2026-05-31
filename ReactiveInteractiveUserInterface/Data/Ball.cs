@@ -9,6 +9,7 @@
 //_____________________________________________________________________________________________________________________________________
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,17 +18,19 @@ namespace TP.ConcurrentProgramming.Data
     internal class Ball : IBall
     {
         private readonly CancellationTokenSource _cancelTokenSource;
-        private readonly int _updateInterval = 15; // ms (ok. 60 FPS)
+        private readonly IDiagnosticLogger _logger;
+        private readonly int _updateInterval = 15;
 
         public double Mass { get; }
         public double Radius { get; }
 
-        public Ball(Vector initialPosition, Vector initialVelocity, double mass, double radius)
+        public Ball(Vector initialPosition, Vector initialVelocity, double mass, double radius, IDiagnosticLogger logger)
         {
             _position = initialPosition;
             Velocity = initialVelocity;
             Mass = mass;
             Radius = radius;
+            _logger = logger;
 
             _cancelTokenSource = new CancellationTokenSource();
             Task.Run(MoveLoop);
@@ -35,11 +38,20 @@ namespace TP.ConcurrentProgramming.Data
 
         private async Task MoveLoop()
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             try
             {
                 while (!_cancelTokenSource.Token.IsCancellationRequested)
                 {
-                    Position = new Vector(Position.x + Velocity.x, Position.y + Velocity.y);
+                    double timeElapsed = stopwatch.Elapsed.TotalSeconds;
+                    stopwatch.Restart();
+
+                    double nextX = Position.x + (Velocity.x * timeElapsed);
+                    double nextY = Position.y + (Velocity.y * timeElapsed);
+
+                    Position = new Vector(nextX, nextY);
 
                     await Task.Delay(_updateInterval, _cancelTokenSource.Token);
                 }
@@ -70,7 +82,9 @@ namespace TP.ConcurrentProgramming.Data
                 if (_position != value)
                 {
                     _position = value;
+
                     NewPositionNotification?.Invoke(this, _position);
+                    _logger?.LogBallState(this);
                 }
             }
         }

@@ -16,8 +16,15 @@ namespace TP.ConcurrentProgramming.Data
 {
     internal class DataImplementation : DataAbstractAPI
     {
+        private bool Disposed = false;
+        private List<Ball> BallsList = new List<Ball>();
+        private readonly object _ballsLock = new object();
+
+        private readonly IDiagnosticLogger _logger;
+
         public DataImplementation()
         {
+            _logger = new DiagnosticLogger("diagnostics.json");
         }
 
         public override void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler)
@@ -28,16 +35,16 @@ namespace TP.ConcurrentProgramming.Data
             Random random = new Random();
             for (int i = 0; i < numberOfBalls; i++)
             {
-                // Inicjalizacja stanu początkowego - tylko wygenerowanie danych
                 Vector startingPosition = new Vector(random.Next(5, 95), random.Next(5, 95));
-                double velocityX = (random.NextDouble() * 5) - 2.5;
-                double velocityY = (random.NextDouble() * 5) - 2.5;
+                double velocityX = (random.NextDouble() * 100) - 50;
+                double velocityY = (random.NextDouble() * 100) - 50;
                 Vector initialVelocity = new Vector(velocityX, velocityY);
 
-                Ball newBall = new Ball(startingPosition, initialVelocity, 1.0, 10.0);
+
+
+                Ball newBall = new Ball(startingPosition, initialVelocity, 1.0, 10.0, _logger);
                 upperLayerHandler(startingPosition, newBall);
 
-                // ZABEZPIECZENIE DODAWANIA
                 lock (_ballsLock)
                 {
                     BallsList.Add(newBall);
@@ -66,7 +73,6 @@ namespace TP.ConcurrentProgramming.Data
             {
                 if (disposing)
                 {
-                    // ZABEZPIECZENIE CZYSZCZENIA
                     lock (_ballsLock)
                     {
                         BallsList.Clear();
@@ -78,18 +84,9 @@ namespace TP.ConcurrentProgramming.Data
 
         public override void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
-
-        private bool Disposed = false;
-        private List<Ball> BallsList = new List<Ball>();
-        private readonly object _ballsLock = new object();
-
-        // -------------------------------------------------------------
-        // Metody testowe z atrybutem Conditional
-        // -------------------------------------------------------------
 
         [Conditional("DEBUG")]
         internal void CheckBallsList(Action<IEnumerable<IBall>> returnBallsList)
