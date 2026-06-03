@@ -38,15 +38,17 @@ namespace TP.ConcurrentProgramming.Data
 
         private async Task MoveLoop()
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
+            DateTime lastUpdateTime = DateTime.Now;
 
             try
             {
                 while (!_cancelTokenSource.Token.IsCancellationRequested)
                 {
-                    double timeElapsed = stopwatch.Elapsed.TotalSeconds;
-                    stopwatch.Restart();
+                    DateTime currentTime = DateTime.Now;
+
+                    double timeElapsed = (currentTime - lastUpdateTime).TotalSeconds;
+
+                    lastUpdateTime = currentTime;
 
                     double nextX = Position.x + (Velocity.x * timeElapsed);
                     double nextY = Position.y + (Velocity.y * timeElapsed);
