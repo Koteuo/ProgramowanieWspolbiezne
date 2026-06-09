@@ -8,62 +8,78 @@
 //
 //_____________________________________________________________________________________________________________________________________
 
+using System;
+
 namespace TP.ConcurrentProgramming.BusinessLogic
 {
-    internal class Ball : IBall
-    {
-        private readonly Data.IBall _dataBall;
+	internal class Ball : IBall
+	{
+		private readonly Data.IBall _dataBall;
 
-        public Ball(Data.IBall ball)
-        {
-            _dataBall = ball;
-            _dataBall.NewPositionNotification += RaisePositionChangeEvent;
-        }
+		public Ball(Data.IBall ball)
+		{
+			_dataBall = ball;
 
-        public event EventHandler<IPosition>? NewPositionNotification;
+			// Subskrypcja zdarzeń z warstwy Data
+			_dataBall.NewPositionNotification += RaisePositionChangeEvent;
+			_dataBall.ColorChangedNotification += RaiseColorChangeEvent; // NOWE: Nasłuchiwanie na zmianę koloru
+		}
 
-        private void RaisePositionChangeEvent(object? sender, Data.IVector e)
-        {
-            NewPositionNotification?.Invoke(this, new Position(e.x, e.y));
-        }
+		// Zdarzenia udostępniane wyżej (do warstwy Presentation/ViewModel)
+		public event EventHandler<IPosition>? NewPositionNotification;
+		public event EventHandler<string>? ColorChangedNotification; // NOWE: Sygnał dla warstwy wyższej
 
-        internal void Move()
-        {
-            var dims = BusinessLogicAbstractAPI.GetDimensions;
+		// Aktualny kolor pobierany z warstwy danych (przydatne do inicjalizacji)
+		public string Color => _dataBall.Color;
 
-            double nextX = _dataBall.Position.x + _dataBall.Velocity.x;
-            double nextY = _dataBall.Position.y + _dataBall.Velocity.y;
+		private void RaisePositionChangeEvent(object? sender, Data.IVector e)
+		{
+			NewPositionNotification?.Invoke(this, new Position(e.x, e.y));
+		}
 
-            double velX = _dataBall.Velocity.x;
-            double velY = _dataBall.Velocity.y;
+		// NOWE: Metoda przekazująca sygnał o zmianie koloru wyżej
+		private void RaiseColorChangeEvent(object? sender, string newColor)
+		{
+			ColorChangedNotification?.Invoke(this, newColor);
+		}
 
-            // Odbicia w osi X
-            if (nextX <= 0)
-            {
-                nextX = 0; // Wyrównanie do lewej ściany
-                velX = -velX; // Odbicie
-            }
-            else if (nextX >= (dims.TableWidth - dims.BallDimension))
-            {
-                nextX = dims.TableWidth - dims.BallDimension; // Wyrównanie do prawej ściany
-                velX = -velX; // Odbicie
-            }
+		internal void Move()
+		{
+			var dims = BusinessLogicAbstractAPI.GetDimensions;
 
-            // Odbicia w osi Y
-            if (nextY <= 0)
-            {
-                nextY = 0; // Wyrównanie do górnej ściany
-                velY = -velY; // Odbicie
-            }
-            else if (nextY >= (dims.TableHeight - dims.BallDimension))
-            {
-                nextY = dims.TableHeight - dims.BallDimension; // Wyrównanie do dolnej ściany
-                velY = -velY; // Odbicie
-            }
+			double nextX = _dataBall.Position.x + _dataBall.Velocity.x;
+			double nextY = _dataBall.Position.y + _dataBall.Velocity.y;
 
-            // Przypisanie nowych wartości
-            _dataBall.Velocity = new LogicVector(velX, velY);
-            _dataBall.Position = new LogicVector(nextX, nextY);
-        }
-    }
+			double velX = _dataBall.Velocity.x;
+			double velY = _dataBall.Velocity.y;
+
+			// Odbicia w osi X
+			if (nextX <= 0)
+			{
+				nextX = 0;
+				velX = -velX;
+			}
+			else if (nextX >= (dims.TableWidth - dims.BallDimension))
+			{
+				nextX = dims.TableWidth - dims.BallDimension;
+				velX = -velX;
+			}
+
+			// Odbicia w osi Y
+			if (nextY <= 0)
+			{
+				nextY = 0;
+				velY = -velY;
+			}
+			else if (nextY >= (dims.TableHeight - dims.BallDimension))
+			{
+				nextY = dims.TableHeight - dims.BallDimension;
+				velY = -velY;
+			}
+
+			// Przypisanie nowych wartości
+			_dataBall.Velocity = new LogicVector(velX, velY);
+			_dataBall.Position = new LogicVector(nextX, nextY);
+		}
+	}
 }

@@ -8,7 +8,6 @@
 //
 //  by introducing yourself and telling us what you do with this community.
 //_____________________________________________________________________________________________________________________________________
-
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -23,8 +22,27 @@ namespace TP.ConcurrentProgramming.Presentation.Model
         {
             TopBackingField = top;
             LeftBackingField = left;
+            
+            Color = underneathBall.Color; 
+
             underneathBall.NewPositionNotification += NewPositionNotification;
+            
+            underneathBall.ColorChangedNotification += UpdateColorNotification;
         }
+
+        private string _color;
+        public string Color
+        {
+            get { return _color; }
+            private set
+            {
+                if (_color == value)
+                    return;
+                _color = value;
+                RaisePropertyChanged();
+            }
+        }
+
 
         public double Top
         {
@@ -57,6 +75,11 @@ namespace TP.ConcurrentProgramming.Presentation.Model
 
         private double TopBackingField;
         private double LeftBackingField;
+
+        private void UpdateColorNotification(object sender, string newColor)
+        {
+            Color = newColor;
+        }
 
         private void NewPositionNotification(object sender, IPosition e)
         {

@@ -36,9 +36,9 @@ namespace TP.ConcurrentProgramming.Data
             for (int i = 0; i < numberOfBalls; i++)
             {
                 Vector startingPosition = new Vector(random.Next(5, 95), random.Next(5, 95));
-                double velocityX = (random.NextDouble() * 100) - 50;
-                double velocityY = (random.NextDouble() * 100) - 50;
-                Vector initialVelocity = new Vector(velocityX, velocityY);
+				double velocityX = (random.NextDouble() * 1.0) - 0.5;
+				double velocityY = (random.NextDouble() * 1.0) - 0.5;
+				Vector initialVelocity = new Vector(velocityX, velocityY);
 
 
 

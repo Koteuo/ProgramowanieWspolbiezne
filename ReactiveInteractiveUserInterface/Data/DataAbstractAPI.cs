@@ -30,13 +30,15 @@ namespace TP.ConcurrentProgramming.Data
         double y { get; init; }
     }
 
-    public interface IBall
-    {
-        event EventHandler<IVector> NewPositionNotification;
-        IVector Velocity { get; set; }
-        IVector Position { get; set; }
+	public interface IBall
+	{
+		event EventHandler<IVector> NewPositionNotification;
+		event EventHandler<string>? ColorChangedNotification;
+		IVector Velocity { get; set; }
+		IVector Position { get; set; }
 
-        double Mass { get; }
-        double Radius { get; }
-    }
+		double Mass { get; }
+		double Radius { get; }
+		string Color { get; }
+	}
 }

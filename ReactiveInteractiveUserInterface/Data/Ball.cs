@@ -15,63 +15,92 @@ using System.Threading.Tasks;
 
 namespace TP.ConcurrentProgramming.Data
 {
-    internal class Ball : IBall
-    {
-        private readonly CancellationTokenSource _cancelTokenSource;
-        private readonly IDiagnosticLogger _logger;
-        private readonly int _updateInterval = 15;
+	internal class Ball : IBall
+	{
+		private readonly CancellationTokenSource _cancelTokenSource;
+		private readonly IDiagnosticLogger _logger;
+		private readonly int _updateInterval = 15;
 
-        public double Mass { get; }
-        public double Radius { get; }
+		// Dodajemy Timer do sterowania kolorem
+		private readonly Timer _colorChangeTimer;
+		private static readonly Random _random = new Random();
 
-        public Ball(Vector initialPosition, Vector initialVelocity, double mass, double radius, IDiagnosticLogger logger)
-        {
-            _position = initialPosition;
-            Velocity = initialVelocity;
-            Mass = mass;
-            Radius = radius;
-            _logger = logger;
+		public double Mass { get; }
+		public double Radius { get; }
 
-            _cancelTokenSource = new CancellationTokenSource();
-            Task.Run(MoveLoop);
-        }
+		// Właściwość przechowująca obecny kolor
+		public string Color { get; private set; }
 
-        private async Task MoveLoop()
-        {
-            DateTime lastUpdateTime = DateTime.Now;
+		// Zdarzenie powiadamiające logikę o zmianie koloru (sygnał)
+		public event EventHandler<string>? ColorChangedNotification;
 
-            try
-            {
-                while (!_cancelTokenSource.Token.IsCancellationRequested)
-                {
-                    DateTime currentTime = DateTime.Now;
+		public Ball(Vector initialPosition, Vector initialVelocity, double mass, double radius, IDiagnosticLogger logger)
+		{
+			_position = initialPosition;
+			Velocity = initialVelocity;
+			Mass = mass;
+			Radius = radius;
+			_logger = logger;
+			Color = "#FFFFFFFF"; // Domyślny kolor startowy (np. biały)
 
-                    double timeElapsed = (currentTime - lastUpdateTime).TotalSeconds;
+			// Konfiguracja timera: 
+			// 1. ZmianaKoloru - metoda do wywołania (sygnał)
+			// 2. null - dodatkowe dane (niepotrzebne)
+			// 3. 0 - opóźnienie startu (od razu)
+			// 4. 2000 - interwał w czasie rzeczywistym (np. co 2000 ms / 2 sekundy)
+			_colorChangeTimer = new Timer(ChangeColorSignal, null, 0, 2000);
 
-                    lastUpdateTime = currentTime;
+			_cancelTokenSource = new CancellationTokenSource();
+			Task.Run(MoveLoop);
+		}
 
-                    double nextX = Position.x + (Velocity.x * timeElapsed);
-                    double nextY = Position.y + (Velocity.y * timeElapsed);
+		// Metoda wywoływana "sygnałowo" przez systemowy Timer
+		private void ChangeColorSignal(object? state)
+		{
+			// Przykładowa paleta kolorów (kody HEX dla WPF)
+			string[] colors = { "#FFFF0000", "#FF00FF00", "#FF0000FF", "#FFFFFF00", "#FFFF00FF" };
 
-                    Position = new Vector(nextX, nextY);
+			string newColor = colors[_random.Next(colors.Length)];
 
-                    await Task.Delay(_updateInterval, _cancelTokenSource.Token);
-                }
-            }
-            catch (TaskCanceledException)
-            {
-            }
-        }
+			if (Color != newColor)
+			{
+				Color = newColor;
+				// Wysłanie sygnału wyżej, że kolor się zmienił
+				ColorChangedNotification?.Invoke(this, Color);
+			}
+		}
 
-        public void Dispose()
-        {
-            if (!_cancelTokenSource.IsCancellationRequested)
-            {
-                _cancelTokenSource.Cancel();
-            }
-        }
+		private async Task MoveLoop()
+		{
+			try
+			{
+				while (!_cancelTokenSource.Token.IsCancellationRequested)
+				{
+					double nextX = Position.x + Velocity.x;
+					double nextY = Position.y + Velocity.y;
 
-        public event EventHandler<IVector>? NewPositionNotification;
+					Position = new Vector(nextX, nextY);
+
+					await Task.Delay(_updateInterval, _cancelTokenSource.Token);
+				}
+			}
+			catch (TaskCanceledException)
+			{
+
+			}
+		}
+
+		public void Dispose()
+		{
+			if (!_cancelTokenSource.IsCancellationRequested)
+			{
+				_cancelTokenSource.Cancel();
+			}
+
+			_colorChangeTimer?.Dispose();
+		}
+
+		public event EventHandler<IVector>? NewPositionNotification;
 
         public IVector Velocity { get; set; }
 

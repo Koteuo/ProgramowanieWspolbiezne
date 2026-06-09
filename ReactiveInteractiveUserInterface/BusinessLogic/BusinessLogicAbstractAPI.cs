@@ -43,8 +43,11 @@ namespace TP.ConcurrentProgramming.BusinessLogic
         double y { get; init; }
     }
 
-    public interface IBall
-    {
-        event EventHandler<IPosition> NewPositionNotification;
-    }
+	public interface IBall
+	{
+		event EventHandler<IPosition> NewPositionNotification;
+		event EventHandler<string>? ColorChangedNotification;
+
+		string Color { get; }
+	}
 }
