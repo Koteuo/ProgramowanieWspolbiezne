@@ -20,16 +20,15 @@ namespace TP.ConcurrentProgramming.BusinessLogic
 		{
 			_dataBall = ball;
 
-			// Subskrypcja zdarzeń z warstwy Data
 			_dataBall.NewPositionNotification += RaisePositionChangeEvent;
-			_dataBall.ColorChangedNotification += RaiseColorChangeEvent; // NOWE: Nasłuchiwanie na zmianę koloru
+			_dataBall.ColorChangedNotification += RaiseColorChangeEvent;
 		}
 
-		// Zdarzenia udostępniane wyżej (do warstwy Presentation/ViewModel)
-		public event EventHandler<IPosition>? NewPositionNotification;
-		public event EventHandler<string>? ColorChangedNotification; // NOWE: Sygnał dla warstwy wyższej
 
-		// Aktualny kolor pobierany z warstwy danych (przydatne do inicjalizacji)
+		public event EventHandler<IPosition>? NewPositionNotification;
+		public event EventHandler<string>? ColorChangedNotification;
+
+
 		public string Color => _dataBall.Color;
 
 		private void RaisePositionChangeEvent(object? sender, Data.IVector e)
@@ -37,7 +36,6 @@ namespace TP.ConcurrentProgramming.BusinessLogic
 			NewPositionNotification?.Invoke(this, new Position(e.x, e.y));
 		}
 
-		// NOWE: Metoda przekazująca sygnał o zmianie koloru wyżej
 		private void RaiseColorChangeEvent(object? sender, string newColor)
 		{
 			ColorChangedNotification?.Invoke(this, newColor);
@@ -53,7 +51,6 @@ namespace TP.ConcurrentProgramming.BusinessLogic
 			double velX = _dataBall.Velocity.x;
 			double velY = _dataBall.Velocity.y;
 
-			// Odbicia w osi X
 			if (nextX <= 0)
 			{
 				nextX = 0;
@@ -65,7 +62,6 @@ namespace TP.ConcurrentProgramming.BusinessLogic
 				velX = -velX;
 			}
 
-			// Odbicia w osi Y
 			if (nextY <= 0)
 			{
 				nextY = 0;
@@ -77,7 +73,6 @@ namespace TP.ConcurrentProgramming.BusinessLogic
 				velY = -velY;
 			}
 
-			// Przypisanie nowych wartości
 			_dataBall.Velocity = new LogicVector(velX, velY);
 			_dataBall.Position = new LogicVector(nextX, nextY);
 		}
